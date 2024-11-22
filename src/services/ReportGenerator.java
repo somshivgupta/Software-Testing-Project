@@ -1,4 +1,3 @@
-// NEW FILE: src/main/services/ReportGenerator.java
 package services;
 
 import models.Order;
