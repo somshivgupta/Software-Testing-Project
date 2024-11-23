@@ -3,6 +3,15 @@
 ## Project Overview
 A comprehensive Java-based inventory management system designed to handle product inventory, orders, and supplier relationships. The system provides functionality for tracking stock levels, processing orders, managing suppliers, and generating detailed reports.
 
+## Command-Line Interface (CLI)
+The core functionality of this project can be accessed through a command-line interface (CLI) using the `App.java` class. The CLI provides a user-friendly interface for interacting with the system, allowing users to create, update, and manage products, orders, suppliers, and generate reports.
+
+### Usage
+Compile the Java code:
+  ```bash
+  javac src/App.java
+  ```
+
 ## Features Implemented
 1. Inventory Management
    - Product tracking with real-time quantity updates

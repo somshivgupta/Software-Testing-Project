@@ -1,3 +1,4 @@
-P1,Laptop,999.99,8,Electronics
+P1,Monitor,300.00,30,Electronics
 P2,Mouse,29.99,50,Electronics
 P3,Keyboard,59.99,30,Electronics
+P4,Microphone,89.00,30,Electronics

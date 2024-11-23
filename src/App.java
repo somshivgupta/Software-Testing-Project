@@ -1,250 +1,416 @@
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Map;
+
 import models.*;
 import services.*;
 
 public class App {
+    private static Scanner scanner = new Scanner(System.in);
+    private static UserManager userManager;
+    private static InventoryManager inventoryManager;
+    private static OrderManager orderManager;
+    private static SearchService searchService;
+
     public static void main(String[] args) {
-        // Initialize all services
-        InventoryManager manager = new InventoryManager();
-        OrderManager orderManager = new OrderManager(manager);
-        CategoryManager categoryManager = new CategoryManager();
-        ReportGenerator reportGenerator = new ReportGenerator(manager, orderManager);
-        SearchService searchService = new SearchService(manager);
-        UserManager userManager = new UserManager();
-        NotificationService notificationService = new NotificationService();
-        InvoiceService invoiceService = new InvoiceService(orderManager);
-        SupplierManager supplierManager = new SupplierManager();
-        PurchaseOrderManager purchaseOrderManager = new PurchaseOrderManager(manager, supplierManager);
+        initialize();
+        mainLoop();
+    }
 
-        Category electronics = new Category("C1", "Electronics", "Electronic devices and accessories");
-        categoryManager.addCategory(electronics);
+    private static void initialize() {
+        userManager = new UserManager();
+        inventoryManager = new InventoryManager();
+        orderManager = new OrderManager(inventoryManager);
+        searchService = new SearchService(inventoryManager);
 
-        Product laptop = new Product("P1", "Laptop", 999.99, 10, "Electronics");
-        Product mouse = new Product("P2", "Mouse", 29.99, 50, "Electronics");
-        manager.addProduct(laptop);
-        manager.addProduct(mouse);
+        // Add some sample products
+        addSampleProducts();
+    }
 
-        categoryManager.assignProductToCategory("C1", laptop);
-        categoryManager.assignProductToCategory("C1", mouse);
+    private static void addSampleProducts() {
+        try {
+            // Load inventory from file
+            inventoryManager.loadInventoryFromFile();
+            System.out.println("Inventory loaded successfully from file.");
+        } catch (RuntimeException e) {
+            System.out.println("Warning: Could not load inventory from file. Starting with empty inventory.");
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 
-        // Test Category Management
-        System.out.println("Products in Electronics category:");
-        categoryManager.getProductsByCategory("C1").forEach(System.out::println);
+    private static void mainLoop() {
+        boolean running = true;
+        while (running) {
+            if (userManager.getCurrentUser() == null) {
+                running = showLoginMenu();
+            } else {
+                if (userManager.isAdmin()) {
+                    showAdminMenu();
+                } else {
+                    showUserMenu();
+                }
+            }
+        }
+        System.out.println("Thank you for using the Inventory Management System!");
+    }
 
-        System.out.println("\nAfter 10% price increase in category:");
-        categoryManager.updateCategoryProducts("C1", 0.10);
+    private static boolean showLoginMenu() {
+        System.out.println("\n=== Login Menu ===");
+        System.out.println("1. Login");
+        System.out.println("2. Register New User");
+        System.out.println("3. Exit");
+        System.out.print("Choose an option: ");
 
-        // Test Order functionality
-        System.out.println("\nTesting Order Management:");
-        Order order = orderManager.createOrder("ORD1"); // Create order through manager
-        order.addItem(new OrderItem(laptop, 2));
-        System.out.println("Order created: " + order);
-        orderManager.processOrder("ORD1");
-        System.out.println("Order after processing: " + orderManager.getOrder("ORD1"));
+        int choice = scanner.nextInt();
+        scanner.nextLine(); 
 
-        // Test Search functionality
-        System.out.println("\nTesting Search Service:");
-        System.out.println("Products containing 'lap':");
-        searchService.searchByName("lap").forEach(System.out::println);
+        switch (choice) {
+            case 1:
+                handleLogin();
+                return true;
+            case 2:
+                handleRegistration();
+                return true;
+            case 3:
+                return false;
+            default:
+                System.out.println("Invalid option. Please try again.");
+                return true;
+        }
+    }
 
-        System.out.println("\nProducts between $20-$100:");
-        searchService.filterByPriceRange(20, 100).forEach(System.out::println);
+    private static void handleRegistration() {
+        System.out.println("\n=== User Registration ===");
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
 
-        System.out.println("\nProducts with stock >= 30:");
-        searchService.filterByStock(30).forEach(System.out::println);
+        try {
+            // Create new user with "USER" role
+            User newUser = new User(username, password, "USER");
+            userManager.addUser(newUser);
+            System.out.println("Registration successful! Please login with your credentials.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error during registration: " + e.getMessage());
+        }
+    }
 
-        // Test Authentication
-        System.out.println("\nTesting Authentication:");
-        System.out.println("Login attempt (admin): " + userManager.login("admin", "admin123"));
-        System.out.println("Is admin: " + userManager.isAdmin());
+    private static void handleLogin() {
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
 
-        // Test Notifications
-        System.out.println("\nTesting Notifications:");
-        notificationService.createLowStockNotification(laptop);
-        notificationService.createOrderNotification("ORD1", "COMPLETED");
+        if (userManager.login(username, password)) {
+            System.out.println("Login successful!");
+        } else {
+            System.out.println("Invalid credentials. Please try again.");
+        }
+    }
 
-        System.out.println("Unread notifications:");
-        notificationService.getUnreadNotifications()
-                .forEach(n -> System.out.println(n.getType() + ": " + n.getMessage()));
+    private static void showUserMenu() {
+        while (true) {
+            System.out.println("\n=== User Menu ===");
+            System.out.println("1. View Products");
+            System.out.println("2. Search Products");
+            System.out.println("3. Create Order");
+            System.out.println("4. View Orders");
+            System.out.println("5. Logout");
+            System.out.print("Choose an option: ");
 
-        // Generate Report
-        System.out.println("\nFinal Report:");
-        System.out.println(reportGenerator.generateReport());
+            int choice = scanner.nextInt();
+            scanner.nextLine(); 
 
-        // Test Invoice
-        System.out.println("\nTesting Invoice System:");
-        Invoice invoice = invoiceService.generateInvoice("ORD1");
-        System.out.println("Generated Invoice: " + invoice);
+            switch (choice) {
+                case 1:
+                    viewProducts();
+                    break;
+                case 2:
+                    searchProducts();
+                    break;
+                case 3:
+                    createOrder();
+                    break;
+                case 4:
+                    viewOrders();
+                    break;
+                case 5:
+                    userManager.logout();
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
 
-        invoiceService.applyDiscount("INV1", 100);
-        System.out.println("After discount: " + invoice);
+    private static void showAdminMenu() {
+        while (true) {
+            System.out.println("\n=== Admin Menu ===");
+            System.out.println("1. View Products");
+            System.out.println("2. Search Products");
+            System.out.println("3. Create Order");
+            System.out.println("4. View Orders");
+            System.out.println("5. Add Product");
+            System.out.println("6. Update Product Quantity");
+            System.out.println("7. View Low Stock Products");
+            System.out.println("8. View Total Inventory Value");
+            System.out.println("9. Save Inventory to File");
+            System.out.println("10. Logout");
+            System.out.print("Choose an option: ");
 
-        invoiceService.processPayment("INV1");
-        System.out.println("After payment: " + invoice);
+            int choice = scanner.nextInt();
+            scanner.nextLine(); 
 
-        // Test Supplier
-        System.out.println("\nTesting Supplier Management:");
-        Supplier supplier = new Supplier("S1", "TechSupply Inc", "John Doe", "john@techsupply.com", "1234567890");
-        supplierManager.addSupplier(supplier);
+            switch (choice) {
+                case 1:
+                    viewProducts();
+                    break;
+                case 2:
+                    searchProducts();
+                    break;
+                case 3:
+                    createOrder();
+                    break;
+                case 4:
+                    viewOrders();
+                    break;
+                case 5:
+                    addProduct();
+                    break;
+                case 6:
+                    updateProductQuantity();
+                    break;
+                case 7:
+                    viewLowStockProducts();
+                    break;
+                case 8:
+                    viewTotalInventoryValue();
+                    break;
+                case 9:
+                    saveInventory();
+                    break;
+                case 10:
+                    userManager.logout();
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
 
-        supplierManager.assignProductToSupplier("S1", "P1");
-        System.out.println("Supplier products: " + supplierManager.getSupplierProducts("S1"));
+    // Implementation of menu options
+    private static void viewProducts() {
+        System.out.println("\n=== Product List ===");
+        List<Product> products = inventoryManager.getAllProducts();
+        for (Product product : products) {
+            System.out.println(product);
+        }
+    }
 
-        System.out.println("\nUpdating supplier rating...");
-        supplierManager.updateSupplierRating("S1", 4.5);
-        System.out.println("Top suppliers: " + supplierManager.getTopSuppliers(1));
+    private static void searchProducts() {
+        System.out.println("\n=== Search Products ===");
+        System.out.println("1. Search by name");
+        System.out.println("2. Filter by price range");
+        System.out.println("3. Filter by stock level");
+        System.out.print("Choose search type: ");
 
-        // Test Purchase Order
-        System.out.println("\nTesting Purchase Order System:");
-        // Create PO
-        PurchaseOrder po = purchaseOrderManager.createPurchaseOrder("S1");
-        System.out.println("Created PO: " + po);
+        int choice = scanner.nextInt();
+        scanner.nextLine(); 
 
-        // Add items to PO
-        purchaseOrderManager.addItemToPO(po.getId(), "P1", 5);
-        System.out.println("PO after adding items: " + po);
+        List<Product> results = null;
+        switch (choice) {
+            case 1:
+                System.out.print("Enter search keyword: ");
+                String keyword = scanner.nextLine();
+                results = searchService.searchByName(keyword);
+                break;
+            case 2:
+                System.out.print("Enter minimum price: ");
+                double minPrice = getValidDoubleInput(scanner, "Enter minimum price: ");
+                System.out.print("Enter maximum price: ");
+                double maxPrice = getValidDoubleInput(scanner, "Enter maximum price: ");
+                results = searchService.filterByPriceRange(minPrice, maxPrice);
+                break;
+            case 3:
+                System.out.print("Enter minimum stock level: ");
+                int minStock = scanner.nextInt();
+                results = searchService.filterByStock(minStock);
+                break;
+            default:
+                System.out.println("Invalid option.");
+                return;
+        }
 
-        // Approve and receive PO
-        System.out.println("\nProcessing PO:");
-        purchaseOrderManager.approvePO(po.getId());
-        System.out.println("After approval: " + po);
-        purchaseOrderManager.receivePO(po.getId());
-        System.out.println("After receiving: " + po);
+        if (results != null && !results.isEmpty()) {
+            System.out.println("\nSearch Results:");
+            for (Product product : results) {
+                System.out.println(product);
+            }
+        } else {
+            System.out.println("No products found.");
+        }
+    }
 
-        // Check updated inventory
-        System.out.println("\nUpdated laptop quantity: " + manager.getProduct("P1").get());
+    private static void createOrder() {
+        System.out.println("\n=== Create Order ===");
+        System.out.print("Enter order ID: ");
+        String orderId = scanner.nextLine();
+
+        Order order = orderManager.createOrder(orderId);
+        boolean addingItems = true;
+        // Map to track quantities ordered for each product
+        Map<String, Integer> orderedQuantities = new HashMap<>();
+
+        while (addingItems) {
+            viewProducts();
+            System.out.print("\nEnter product ID (or 'done' to finish): ");
+            String productId = scanner.nextLine();
+
+            if (productId.equalsIgnoreCase("done")) {
+                addingItems = false;
+                continue;
+            }
+
+            Product product = inventoryManager.getProduct(productId).orElse(null);
+            if (product == null) {
+                System.out.println("Product not found.");
+                continue;
+            }
+
+            System.out.print("Enter quantity: ");
+            int quantity = scanner.nextInt();
+            scanner.nextLine();
+
+            // Check if we've already ordered this product
+            int currentOrdered = orderedQuantities.getOrDefault(productId, 0);
+
+            // Validate total quantity against available stock
+            if (currentOrdered + quantity > product.getQuantity()) {
+                System.out.println("Error: Cannot order " + quantity + " more units. Only " +
+                        (product.getQuantity() - currentOrdered) + " units available.");
+                continue;
+            }
+
+            try {
+                OrderItem item = new OrderItem(product, quantity);
+                order.addItem(item);
+                // Update ordered quantities
+                orderedQuantities.put(productId, currentOrdered + quantity);
+                System.out.println("Item added to order.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+
+        try {
+            orderManager.processOrder(orderId);
+            System.out.println("Order processed successfully!");
+            System.out.println("Total amount: $" + order.getTotalAmount());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error processing order: " + e.getMessage());
+        }
+    }
+
+    private static void viewOrders() {
+        System.out.println("\n=== Order List ===");
+        List<Order> orders = orderManager.getAllOrders();
+        for (Order order : orders) {
+            System.out.println(order);
+        }
+    }
+
+    private static void addProduct() {
+        System.out.println("\n=== Add Product ===");
+        System.out.print("Enter product ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter product name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter product price: ");
+        double price = getValidDoubleInput(scanner, "Enter product price: ");
+        System.out.print("Enter initial quantity: ");
+        int quantity = scanner.nextInt();
+        scanner.nextLine(); 
+        System.out.print("Enter product category: ");
+        String category = scanner.nextLine();
+
+        try {
+            Product newProduct = new Product(id, name, price, quantity, category);
+            inventoryManager.addProduct(newProduct);
+            inventoryManager.saveInventoryToFile(); // Save changes to file
+            System.out.println("Product added successfully!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error adding product: " + e.getMessage());
+        }
+    }
+
+    private static void updateProductQuantity() {
+        System.out.println("\n=== Update Product Quantity ===");
+        System.out.print("Enter product ID: ");
+        String id = scanner.nextLine();
+        System.out.print("Enter quantity change (positive for increase, negative for decrease): ");
+        int change = scanner.nextInt();
+        scanner.nextLine(); 
+
+        try {
+            inventoryManager.updateQuantity(id, change);
+            inventoryManager.saveInventoryToFile(); // Save changes to file
+            System.out.println("Quantity updated successfully!");
+
+            // Show updated quantity
+            Product product = inventoryManager.getProduct(id).orElse(null);
+            if (product != null) {
+                System.out.println("New quantity for " + product.getName() + ": " + product.getQuantity());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error updating quantity: " + e.getMessage());
+        }
+    }
+
+    private static void viewLowStockProducts() {
+        System.out.println("\n=== Low Stock Products ===");
+        System.out.print("Enter threshold quantity: ");
+        int threshold = scanner.nextInt();
+        scanner.nextLine(); 
+
+        List<Product> lowStock = inventoryManager.getLowStockProducts(threshold);
+        if (lowStock.isEmpty()) {
+            System.out.println("No products below threshold.");
+        } else {
+            System.out.println("Products below threshold " + threshold + ":");
+            for (Product product : lowStock) {
+                System.out.println(product);
+            }
+        }
+    }
+
+    private static void viewTotalInventoryValue() {
+        System.out.println("\n=== Total Inventory Value ===");
+        double totalValue = inventoryManager.calculateTotalInventoryValue();
+        System.out.printf("Total value: $%.2f%n", totalValue);
+    }
+
+    private static void saveInventory() {
+        System.out.println("\n=== Saving Inventory ===");
+        try {
+            inventoryManager.saveInventoryToFile();
+            System.out.println("Inventory saved successfully!");
+        } catch (RuntimeException e) {
+            System.out.println("Error saving inventory: " + e.getMessage());
+        }
+    }
+
+    private static double getValidDoubleInput(Scanner scanner, String prompt) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                return scanner.nextDouble();
+            } catch (InputMismatchException e) {
+                System.out.println("Please enter a valid number");
+                scanner.nextLine(); // Clear invalid input
+            }
+        }
     }
 }
-
-// import models.*;
-// import services.*;
-
-// public class App {
-// public static void main(String[] args) {
-// InventoryManager manager = new InventoryManager();
-// OrderManager orderManager = new OrderManager(manager);
-// CategoryManager categoryManager = new CategoryManager();
-// ReportGenerator reportGenerator = new ReportGenerator(manager, orderManager);
-// SearchService searchService = new SearchService(manager);
-// UserManager userManager = new UserManager();
-// NotificationService notificationService = new NotificationService();
-
-// // Create and test category
-// Category electronics = new Category("C1", "Electronics", "Electronic devices
-// and accessories");
-// categoryManager.addCategory(electronics);
-
-// // Create products and assign to category
-// Product laptop = new Product("P1", "Laptop", 999.99, 10, "Electronics");
-// Product mouse = new Product("P2", "Mouse", 29.99, 50, "Electronics");
-// manager.addProduct(laptop);
-// manager.addProduct(mouse);
-
-// categoryManager.assignProductToCategory("C1", laptop);
-// categoryManager.assignProductToCategory("C1", mouse);
-
-// System.out.println("Products in Electronics category:");
-// categoryManager.getProductsByCategory("C1").forEach(System.out::println);
-
-// // Test category price update
-// System.out.println("\nAfter 10% price increase in category:");
-// categoryManager.updateCategoryProducts("C1", 0.10);
-// categoryManager.getProductsByCategory("C1").forEach(System.out::println);
-
-// // Test SearchService
-// System.out.println("\nTesting Search Service:");
-// System.out.println("Products containing 'lap':");
-// searchService.searchByName("lap").forEach(System.out::println);
-
-// System.out.println("\nProducts between $20-$100:");
-// searchService.filterByPriceRange(20, 100).forEach(System.out::println);
-
-// System.out.println("\nProducts with stock >= 30:");
-// searchService.filterByStock(30).forEach(System.out::println);
-
-// System.out.println("\nTesting User Authentication:");
-// System.out.println("Login attempt (admin): " + userManager.login("admin",
-// "admin123"));
-// System.out.println("Is admin: " + userManager.isAdmin());
-
-// // Test regular user
-// userManager.addUser(new User("john", "pass123", "USER"));
-// userManager.logout();
-// System.out.println("\nLogin attempt (john): " + userManager.login("john",
-// "pass123"));
-// System.out.println("Is admin: " + userManager.isAdmin());
-
-// // Test admin operations
-// System.out.println("\nTesting Admin Operations:");
-// userManager.login("admin", "admin123");
-// System.out.println("Current user: " + userManager.getCurrentUser());
-
-// if (userManager.isAdmin()) {
-// // Admin operations
-// Product newProduct = new Product("P4", "Monitor", 299.99, 15, "Electronics");
-// manager.addProduct(newProduct);
-// categoryManager.assignProductToCategory("C1", newProduct);
-// System.out.println("Added new product as admin");
-// System.out.println(manager.getProduct("P4").get());
-// }
-
-// // Test notifications
-// System.out.println("\nTesting Notifications:");
-// notificationService.createLowStockNotification(laptop);
-// notificationService.createOrderNotification("ORD1", "COMPLETED");
-
-// System.out.println("Unread notifications:");
-// notificationService.getUnreadNotifications().forEach(n ->
-// System.out.println(n.getType() + ": " + n.getMessage()));
-// }
-// }
-
-// import models.Product;
-// import models.OrderItem;
-// import models.Order;
-// import services.InventoryManager;
-// import services.OrderManager;
-// import services.ReportGenerator;
-
-// public class App {
-// public static void main(String[] args) {
-// InventoryManager manager = new InventoryManager();
-// OrderManager orderManager = new OrderManager(manager);
-// ReportGenerator reportGenerator = new ReportGenerator(manager, orderManager);
-// // Create products
-// Product laptop = new Product("P1", "Laptop", 999.99, 10, "Electronics");
-// manager.addProduct(laptop);
-// manager.addProduct(new Product("P2", "Mouse", 29.99, 50, "Electronics"));
-// manager.addProduct(new Product("P3", "Keyboard", 59.99, 30, "Electronics"));
-
-// // Test OrderItem
-// System.out.println("Order Item Test:");
-// OrderItem item = new OrderItem(laptop, 2);
-// System.out.println("Product: " + item.getProduct().getName());
-// System.out.println("Quantity: " + item.getQuantity());
-// System.out.println("Price: " + item.getPriceAtTime());
-// System.out.println("Subtotal: " + item.getSubtotal());
-
-// // Test Order
-// System.out.println("\nTesting Order:");
-// Order order = new Order("ORD1");
-// order.addItem(new OrderItem(laptop, 2));
-// order.addItem(new OrderItem(new Product("P2", "Mouse", 29.99, 5,
-// "Electronics"), 3));
-// System.out.println(order);
-// System.out.println("Total Amount: $" + order.getTotalAmount());
-
-// // Test OrderManager
-// System.out.println("\nTesting OrderManager:");
-// Order newOrder = orderManager.createOrder("ORD2");
-// newOrder.addItem(new OrderItem(laptop, 1));
-// System.out.println("Before processing: " + newOrder);
-// orderManager.processOrder("ORD2");
-// System.out.println("After processing: " + newOrder);
-// System.out.println("Updated laptop quantity: " +
-// manager.getProduct("P1").get());
-
-// // Test ReportGenerator
-// System.out.println("\nTesting Report Generator:");
-// System.out.println(reportGenerator.generateReport());
-// }
-// }

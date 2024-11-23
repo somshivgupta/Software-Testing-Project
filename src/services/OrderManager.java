@@ -3,6 +3,7 @@ package services;
 import models.Order;
 import java.util.*;
 import models.OrderItem;
+import models.Product;
 
 public class OrderManager {
     private Map<String, Order> orders;
@@ -14,6 +15,12 @@ public class OrderManager {
     }
 
     public Order createOrder(String orderId) {
+        if (orderId == null || orderId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Order ID cannot be empty");
+        }
+        if (orders.containsKey(orderId)) {
+            throw new IllegalArgumentException("Order ID already exists");
+        }
         Order order = new Order(orderId);
         orders.put(orderId, order);
         return order;
@@ -24,25 +31,30 @@ public class OrderManager {
         if (order == null) {
             throw new IllegalArgumentException("Order not found");
         }
+        if (order.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Cannot process empty order");
+        }
+        Map<String, Integer> totalOrderedQuantities = new HashMap<>();
 
         for (OrderItem item : order.getItems()) {
-            if (item.getQuantity() > inventoryManager.getProduct(item.getProduct().getId()).get().getQuantity()) {
-                throw new IllegalArgumentException("Insufficient quantity for " + item.getProduct().getName());
+            String productId = item.getProduct().getId();
+            totalOrderedQuantities.merge(productId, item.getQuantity(), Integer::sum);
+
+            Optional<Product> product = inventoryManager.getProduct(productId);
+            if (product.isPresent() && totalOrderedQuantities.get(productId) > product.get().getQuantity()) {
+                throw new IllegalArgumentException(
+                        "Insufficient quantity for " + item.getProduct().getName() +
+                                ". Available: " + product.get().getQuantity() +
+                                ", Ordered: " + totalOrderedQuantities.get(productId));
             }
         }
 
-        // Check and update inventory
-        try {
-            for (OrderItem item : order.getItems()) {
-                inventoryManager.updateQuantity(
-                        item.getProduct().getId(),
-                        -item.getQuantity());
-            }
-            order.setStatus("COMPLETED");
-        } catch (Exception e) {
-            order.setStatus("CANCELLED");
-            throw new RuntimeException("Failed to process order: " + e.getMessage());
+        for (OrderItem item : order.getItems()) {
+            inventoryManager.updateQuantity(
+                    item.getProduct().getId(),
+                    -item.getQuantity());
         }
+        order.setStatus("COMPLETED");
     }
 
     public List<Order> getAllOrders() {

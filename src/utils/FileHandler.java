@@ -19,7 +19,7 @@ public class FileHandler {
                     product.getCategory()));
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error saving inventory", e);
+            throw new RuntimeException("Could not save inventory: " + e.getMessage(), e);
         }
     }
 
@@ -27,18 +27,27 @@ public class FileHandler {
         List<Product> products = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
+            int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                products.add(new Product(
-                    parts[0], // id
-                    parts[1], // name
-                    Double.parseDouble(parts[2]), // price
-                    Integer.parseInt(parts[3]), // quantity
-                    parts[4]  // category
-                ));
+                lineNumber++;
+                try {
+                    String[] parts = line.split(",");
+                    if (parts.length != 5) {
+                        throw new RuntimeException("Invalid data format at line " + lineNumber);
+                    }
+                    products.add(new Product(
+                        parts[0], // id
+                        parts[1], // name
+                        Double.parseDouble(parts[2]), // price
+                        Integer.parseInt(parts[3]), // quantity
+                        parts[4]  // category
+                    ));
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Invalid number format at line " + lineNumber + ": " + e.getMessage());
+                }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error loading inventory", e);
+            throw new RuntimeException("Could not read inventory file: " + e.getMessage(), e);
         }
         return products;
     }
