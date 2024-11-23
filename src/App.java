@@ -13,6 +13,7 @@ public class App {
         NotificationService notificationService = new NotificationService();
         InvoiceService invoiceService = new InvoiceService(orderManager);
         SupplierManager supplierManager = new SupplierManager();
+        PurchaseOrderManager purchaseOrderManager = new PurchaseOrderManager(manager, supplierManager);
 
         Category electronics = new Category("C1", "Electronics", "Electronic devices and accessories");
         categoryManager.addCategory(electronics);
@@ -91,6 +92,26 @@ public class App {
         System.out.println("\nUpdating supplier rating...");
         supplierManager.updateSupplierRating("S1", 4.5);
         System.out.println("Top suppliers: " + supplierManager.getTopSuppliers(1));
+
+        // Test Purchase Order
+        System.out.println("\nTesting Purchase Order System:");
+        // Create PO
+        PurchaseOrder po = purchaseOrderManager.createPurchaseOrder("S1");
+        System.out.println("Created PO: " + po);
+
+        // Add items to PO
+        purchaseOrderManager.addItemToPO(po.getId(), "P1", 5);
+        System.out.println("PO after adding items: " + po);
+
+        // Approve and receive PO
+        System.out.println("\nProcessing PO:");
+        purchaseOrderManager.approvePO(po.getId());
+        System.out.println("After approval: " + po);
+        purchaseOrderManager.receivePO(po.getId());
+        System.out.println("After receiving: " + po);
+
+        // Check updated inventory
+        System.out.println("\nUpdated laptop quantity: " + manager.getProduct("P1").get());
     }
 }
 
