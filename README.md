@@ -158,9 +158,9 @@ graph TD
         K --> I
     end
 
-    classDef default fill:#fff,stroke:#000
-    classDef process fill:#ea9999,stroke:#000
-    classDef storage fill:#9fc5e8,stroke:#000
+    classDef default fill:#fff,color:#000
+    classDef process fill:#ea9999,color:#000
+    classDef storage fill:#9fc5e8,color:#000
     
     class A,B,C default;
     class D,E,F,H process;
