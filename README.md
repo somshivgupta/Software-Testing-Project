@@ -276,7 +276,7 @@ graph TD
     C --> I
     I --> O[User Alert]
     
-    classDef default color:#000
+    classDef default fill:#fff,color:#000
     style A fill:#ea9999,stroke:#000
     style B fill:#9fc5e8,stroke:#000
     style E fill:#ffe599,stroke:#000
