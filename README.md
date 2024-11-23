@@ -131,6 +131,41 @@ A Java-based inventory management system designed to handle product inventory an
    - Error handling with line number tracking
    - Data format validation
 
+## System Flow Diagram
+```mermaid
+graph TD
+    A[User/Admin] --> B[Authentication]
+    B --> C[Access Control]
+    
+    C --> D[Inventory Management]
+    C --> E[Order Processing]
+    C --> F[Search Operations]
+    
+    D --> G[File Operations]
+    E --> D
+    
+    D --> H[Product Management]
+    H --> G
+    
+    subgraph "Inventory Operations"
+        H --> I[Stock Updates]
+        I --> D
+    end
+    
+    subgraph "Order Flow"
+        E --> J[Quantity Validation]
+        J --> K[Stock Update]
+        K --> I
+    end
+
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef process fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef storage fill:#f1f8e9,stroke:#558b2f,stroke-width:2px;
+    
+    class A,B,C default;
+    class D,E,F,H process;
+    class G,I,J,K storage;
+```
 ### File Structure
 ```
 src/
