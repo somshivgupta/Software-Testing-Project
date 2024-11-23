@@ -276,8 +276,8 @@ graph TD
     C --> I
     I --> O[User Alert]
     
-    style A fill:#f9f,stroke:#333
-    style B fill:#bbf,stroke:#333
-    style E fill:#bfb,stroke:#333
-    style I fill:#fbb,stroke:#333
+    style A fill:#ea9999,stroke:#000
+    style B fill:#9fc5e8,stroke:#000
+    style E fill:#ffe599,stroke:#000
+    style I fill:#b6d7a8,stroke:#000
 ```
