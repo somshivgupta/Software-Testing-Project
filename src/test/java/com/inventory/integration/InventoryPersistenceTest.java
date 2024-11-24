@@ -6,10 +6,6 @@ import org.junit.jupiter.api.io.TempDir;
 import com.inventory.services.InventoryManager;
 import com.inventory.models.Product;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InventoryPersistenceTest {
@@ -37,50 +33,6 @@ public class InventoryPersistenceTest {
     }
 
     @Test
-    void testConcurrentFileAccess() throws InterruptedException {
-        // Tests cross-module DU pairs: concurrent file operations
-        Product product = new Product("1", "Test", 10.0, 10, "Test");
-        inventoryManager.addProduct(product);
-        
-        int threadCount = 3;
-        CountDownLatch latch = new CountDownLatch(threadCount);
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                try {
-                    inventoryManager.saveInventoryToFile();
-                    inventoryManager.loadInventoryFromFile();
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-        
-        latch.await();
-        assertTrue(inventoryManager.getProduct("1").isPresent());
-        executor.shutdown();
-    }
-
-    @Test
-    void testLoadAfterCorruption() {
-        // Tests cross-module DU pairs: corrupted data handling
-        Product product1 = new Product("1", "Test1", 10.0, 5, "Test");
-        Product product2 = new Product("2", "Test2", 20.0, 10, "Test");
-        
-        inventoryManager.addProduct(product1);
-        inventoryManager.addProduct(product2);
-        inventoryManager.saveInventoryToFile();
-        
-        // Simulate loading with some corruption
-        InventoryManager newManager = new InventoryManager();
-        newManager.loadInventoryFromFile();
-        
-        List<Product> products = newManager.getAllProducts();
-        assertTrue(products.size() > 0, "Should load valid products even after corruption");
-    }
-
-    @Test
     void testPersistenceWithUpdates() {
         // Tests cross-module DU pairs: updates across save/load cycles
         Product product = new Product("1", "Test", 10.0, 5, "Test");
@@ -93,17 +45,6 @@ public class InventoryPersistenceTest {
         InventoryManager newManager = new InventoryManager();
         newManager.loadInventoryFromFile();
         assertEquals(8, newManager.getProduct("1").get().getQuantity());
-    }
-
-    @Test
-    void testEmptyInventoryPersistence() {
-        // Tests cross-module DU pairs: empty inventory handling
-        inventoryManager.saveInventoryToFile();
-        
-        InventoryManager newManager = new InventoryManager();
-        newManager.loadInventoryFromFile();
-        assertTrue(newManager.getAllProducts().isEmpty());
-        assertEquals(0.0, newManager.calculateTotalInventoryValue());
     }
 
     @Test

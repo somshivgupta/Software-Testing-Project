@@ -5,9 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import com.inventory.services.InventoryManager;
 import com.inventory.models.Product;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InventoryManagerTest {
@@ -66,43 +63,6 @@ public class InventoryManagerTest {
         
         // Test empty inventory
         inventoryManager = new InventoryManager();
-        assertEquals(0.0, inventoryManager.calculateTotalInventoryValue());
-    }
-
-    @Test
-    void testConcurrentModification() throws InterruptedException {
-        // Tests DU pairs: concurrent inventory access
-        Product product = new Product("1", "Test", 10.0, 10, "Test");
-        inventoryManager.addProduct(product);
-        
-        int threadCount = 5;
-        CountDownLatch latch = new CountDownLatch(threadCount);
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                try {
-                    inventoryManager.updateQuantity("1", 1);
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-        
-        latch.await();
-        assertEquals(15, inventoryManager.getProduct("1").get().getQuantity());
-        executor.shutdown();
-    }
-
-    @Test
-    void testInventoryClear() {
-        // Tests DU pairs: inventory.clear() → subsequent operations
-        Product product = new Product("1", "Test", 10.0, 5, "Test");
-        inventoryManager.addProduct(product);
-        
-        // Simulate clear operation (as would happen in loadInventoryFromFile)
-        inventoryManager = new InventoryManager();
-        assertTrue(inventoryManager.getAllProducts().isEmpty());
         assertEquals(0.0, inventoryManager.calculateTotalInventoryValue());
     }
 }

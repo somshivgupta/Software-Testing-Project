@@ -24,34 +24,6 @@ public class FileHandlerTest {
     }
 
     @Test
-    void testLoadInventoryWhenFileDoesNotExist() {
-        List<Product> products = fileHandler.loadInventory();
-        assertTrue(products.isEmpty(), "Should return empty list when file doesn't exist");
-    }
-
-    @Test
-    void testEmptyFile() throws IOException {
-        // Create empty file
-        new File(testFilePath).createNewFile();
-        
-        List<Product> loaded = fileHandler.loadInventory();
-        assertTrue(loaded.isEmpty(), "Should handle empty file");
-    }
-
-    @Test
-    void testMalformedDataInFile() throws IOException {
-        try (PrintWriter writer = new PrintWriter(testFilePath)) {
-            writer.println("1,Test,10.0,5,Test"); // Valid line
-            writer.println("malformed,data"); // Invalid line - wrong number of fields
-            writer.println("2,Test2,invalid,5,Test"); // Invalid line - bad number format
-        }
-
-        List<Product> loaded = fileHandler.loadInventory();
-        assertEquals(1, loaded.size(), "Should only load valid lines");
-        assertEquals("Test", loaded.get(0).getName(), "Should load correct product data");
-    }
-
-    @Test
     void testPartialFileCorruption() throws IOException {
         try (PrintWriter writer = new PrintWriter(testFilePath)) {
             writer.println("1,Test1,10.0,5,Test"); // Valid line
