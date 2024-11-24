@@ -2,13 +2,15 @@ package com.inventory;
 import java.util.Scanner;
 
 import com.inventory.models.*;
+import com.inventory.services.InventoryManager;
+import com.inventory.services.OrderManager;
+import com.inventory.services.SearchService;
+import com.inventory.services.UserManager;
 
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
-
-import com.inventory.services.*;
 
 public class App {
     private static Scanner scanner = new Scanner(System.in);

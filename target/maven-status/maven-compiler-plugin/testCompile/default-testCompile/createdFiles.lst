@@ -1,0 +1,3 @@
+com/inventory/integration/InventoryPersistenceTest.class
+com/inventory/unit/services/InventoryManagerTest.class
+com/inventory/unit/utils/FileHandlerTest.class

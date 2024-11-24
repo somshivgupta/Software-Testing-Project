@@ -10,13 +10,21 @@ public class InventoryManager {
     private FileHandler fileHandler;
 
     public InventoryManager() {
+        this(new FileHandler());
+    }
+
+    public InventoryManager(FileHandler fileHandler) {
         this.inventory = new HashMap<>();
-        this.fileHandler = new FileHandler();
+        this.fileHandler = fileHandler;
     }
 
     public void addProduct(Product product) {
         if (product == null || product.getId() == null) {
             throw new IllegalArgumentException("Invalid product");
+        }
+        // Check for duplicate product ID
+        if (inventory.containsKey(product.getId())) {
+            throw new IllegalArgumentException("Product with ID " + product.getId() + " already exists");
         }
         inventory.put(product.getId(), product);
     }
@@ -37,7 +45,7 @@ public class InventoryManager {
     public List<Product> getLowStockProducts(int threshold) {
         List<Product> lowStock = new ArrayList<>();
         for (Product product : inventory.values()) {
-            if (product.getQuantity() <= threshold) {
+            if (product.getQuantity() < threshold) {
                 lowStock.add(product);
             }
         }
