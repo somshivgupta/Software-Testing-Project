@@ -1,0 +1,10 @@
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/App.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/models/Order.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/models/OrderItem.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/models/Product.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/models/User.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/services/InventoryManager.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/services/OrderManager.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/services/SearchService.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/services/UserManager.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/main/java/com/inventory/utils/FileHandler.java

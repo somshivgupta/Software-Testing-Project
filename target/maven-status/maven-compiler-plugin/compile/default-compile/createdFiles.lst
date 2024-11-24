@@ -1,0 +1,10 @@
+com/inventory/services/UserManager.class
+com/inventory/utils/FileHandler.class
+com/inventory/models/Order.class
+com/inventory/services/InventoryManager.class
+com/inventory/services/SearchService.class
+com/inventory/services/OrderManager.class
+com/inventory/models/OrderItem.class
+com/inventory/models/User.class
+com/inventory/models/Product.class
+com/inventory/App.class
