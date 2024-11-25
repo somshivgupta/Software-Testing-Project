@@ -8,7 +8,7 @@ import com.inventory.models.Product;
 import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InventoryPersistenceTest {
+public class InventoryManagerFileHandlerTest {
     private InventoryManager inventoryManager;
     @TempDir
     Path tempDir;

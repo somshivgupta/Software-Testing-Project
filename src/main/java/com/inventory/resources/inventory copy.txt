@@ -1,0 +1,4 @@
+P1,Keyboard,100,10,Electronics
+P2,Microphone,100,10,Electronics
+P3,Mouse,100,10,Electronics
+P4,Monitor,100,10,Electronics
