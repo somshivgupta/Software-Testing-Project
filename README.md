@@ -207,10 +207,57 @@ void testComponentInteraction() {
 
 ## 4. Coverage Evidence
 ### Screenshots
+#### 1. Test Result
 ```bash
 mvn clean test
 ```
 ![screenshot1](images/screenshot1.png)
 ![screenshot2](images/screenshot2.png)
 
+#### 2. Test File Structure
+![file structure](images/filestructure.png)
+```mermaid
+flowchart TD
+    %% Product Flow
+    P[Product Definitions] -->|id,price,quantity| OI[OrderItem]
+    P -->|id,stock| IM[InventoryManager]
+    
+    %% Order Flow
+    OI -->|subtotal| O[Order]
+    O -->|items,total| OM[OrderManager]
+    
+    %% Inventory Flow
+    IM -->|products| SS[SearchService]
+    IM -->|stock| OM
+    IM -->|data| FH[FileHandler]
+    FH -->|loaded data| IM
+    
+    %% User Flow
+    U[User] -->|credentials| UM[UserManager]
+    UM -->|session| OM
 
+    %% Loops
+    subgraph OrderLoops
+        O -->|getTotalAmount| O
+        OM -->|processOrder| OM
+    end
+    
+    subgraph SearchLoops
+        SS -->|filter| SS
+    end
+    
+    subgraph FileLoops
+        FH -->|readWrite| FH
+    end
+
+    %% Definitions and Uses
+    style P fill:#f9f,color:#000
+    style U fill:#f9f,color:#000
+    style OI fill:#bbf,color:#000
+    style O fill:#bbf,color:#000
+    style IM fill:#bbf,color:#000
+    style OM fill:#bbf,color:#000
+    style SS fill:#bbf,color:#000
+    style FH fill:#bbf,color:#000
+    style UM fill:#bbf,color:#000
+```
