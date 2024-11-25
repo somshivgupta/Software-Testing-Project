@@ -216,6 +216,10 @@ mvn clean test
 
 #### 2. Test File Structure
 ![file structure](images/filestructure.png)
+
+### Data Flow Graphs
+
+#### System-Wide Data Flow
 ```mermaid
 flowchart TD
     %% Product Flow
@@ -251,8 +255,8 @@ flowchart TD
     end
 
     %% Definitions and Uses
-    style P fill:#f9f,color:#000
-    style U fill:#f9f,color:#000
+    style P fill:#fff,color:#000
+    style U fill:#fff,color:#000
     style OI fill:#bbf,color:#000
     style O fill:#bbf,color:#000
     style IM fill:#bbf,color:#000
@@ -260,4 +264,45 @@ flowchart TD
     style SS fill:#bbf,color:#000
     style FH fill:#bbf,color:#000
     style UM fill:#bbf,color:#000
+```
+
+### Data Flow in Loops
+```mermaid
+flowchart TD
+    subgraph Order.getTotalAmount
+        OI[OrderItems List<br>Definition] -->|iterate| LB[Loop Body]
+        LB -->|getSubtotal| ST[Subtotal<br>Calculation]
+        ST -->|accumulate| TS[Total Sum]
+        LB -->|next item| LB
+    end
+
+    subgraph OrderManager.processOrder
+        OL[Order List<br>Definition] -->|iterate| PB[Process Body]
+        PB -->|getQuantity| QV[Quantity<br>Validation]
+        QV -->|update| SI[Stock<br>Update]
+        PB -->|next order| PB
+    end
+
+    subgraph SearchService.filterByStock
+        PL[Products List<br>Definition] -->|stream| FB[Filter Body]
+        FB -->|getQuantity| QC[Quantity<br>Check]
+        QC -->|collect| FR[Filtered<br>Results]
+        FB -->|next product| FB
+    end
+
+    subgraph FileHandler.loadInventory
+        FL[File Lines<br>Definition] -->|readline| RB[Read Body]
+        RB -->|parse| PC[Product<br>Creation]
+        PC -->|add| PD[Products<br>List]
+        RB -->|next line| RB
+    end
+
+    style OI fill:#e6f3ff,color:#000
+    style OL fill:#e6f3ff,color:#000
+    style PL fill:#e6f3ff,color:#000
+    style FL fill:#e6f3ff,color:#000
+    style LB fill:#e6ffed,color:#000
+    style PB fill:#e6ffed,color:#000
+    style FB fill:#e6ffed,color:#000
+    style RB fill:#e6ffed,color:#000
 ```
