@@ -1,382 +1,216 @@
-# Inventory Management System
+# Data Flow Testing Documentation
 
-A simple inventory management system built with Java.
-
-
-## Project Overview
-A Java-based inventory management system designed to handle product inventory and orders. The system provides functionality for tracking stock levels, processing orders, and maintaining inventory data with file persistence.
+## Testing Strategy
+**Data flow Graph**: graph based testing, with only data flow criteria.
 
 ## Project github link:
 
+[Github](https://github.com/tathagat11/Software-Testing-Project)
 
-## Installation & Setup
+## Individual Contribution
+1. Tathagata Talukdar (MT2023189):
+2. Som Shiv Gupta ():
 
-### Prerequisites
-- Java Development Kit (JDK) 21 or higher
-- Apache Maven 3.6 or higher
-- Any text editor or IDE
+## 1. Component Analysis
+This section identifies all definitions and their uses for data flow testing requirements.
 
-## Technology Stack
-- Java 21
-- Maven 3.x
-- JUnit 5.10.1 for testing
+### Models Layer
 
-## Quick Start
-```bash
-git clone https://github.com/tathagat11/Software-Testing-Project.git
-cd inventory-management-system
-mvn clean install
-mvn exec:java
-```
+#### Product
+Definitions:
+- Fields: id, name, price, quantity, category
+- Constructor parameters match field names
+Uses:
+- Getters: direct field access
+- Setters: field modifications
+- Validation: price and quantity checks
 
-## Project Setup
+#### Order
+Definitions:
+- Fields: orderId, items (List), status, orderDate
+- Static: VALID_STATUSES Set
+Uses:
+- Loop: getTotalAmount() iterates through items list
+- Status management: PENDING → COMPLETED states
+Key DU Path: items list definition → loop iteration → total calculation
 
-### Installing Prerequisites
-1. Install Java:
-```bash
-# For Ubuntu/Debian
-sudo apt update
-sudo apt install openjdk-21-jdk
+#### OrderItem
+Definitions:
+- Fields: product (Product reference), quantity
+- Constructor validates parameters
+Uses:
+- getSubtotal(): uses product price and quantity
+- Validation: checks stock availability
+Key DU Path: product definition → price retrieval → subtotal calculation
 
-# Verify installation
-java --version
-```
+#### User
+Definitions:
+- Fields: username, password, role
+- Constructor initializes all fields
+Uses:
+- Authentication: password verification
+- Role checking: access control
+Key DU Path: credentials definition → authentication validation
 
-2. Install Maven:
-```bash
-# For Ubuntu/Debian
-sudo apt install maven
+### Services Layer
 
-# Verify installation
-mvn --version
-```
+#### InventoryManager
+Definitions:
+- inventory: Map<String, Product>
+- fileHandler: FileHandler reference
+Uses:
+- Product CRUD operations
+- Stock calculations (contains loops)
+- File persistence operations
+Key DU Path: inventory map definition → product storage → stock updates
 
-### Building the Project
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd inventory-management-system
-```
+#### OrderManager
+Definitions:
+- orders: Map<String, Order>
+- inventoryManager reference
+Uses:
+- Order processing loop
+- Stock validation and updates
+Key DU Path: orders map definition → processing loop → inventory updates
 
-2. Build the project:
-```bash
-mvn clean install
-```
+#### SearchService
+Definitions:
+- inventoryManager reference
+Uses:
+- Stream operations (loops) for filtering
+- Product search and filtering
+Key DU Path: product list definition → stream processing → filtered results
 
-### Running the Application
-There are several ways to run the application:
+#### UserManager
+Definitions:
+- users: Map<String, User>
+- currentUser: User reference
+Uses:
+- Session management
+- Role-based authorization
+Key DU Path: user definition → login → session management
 
-1. Using Maven exec plugin:
-```bash
-mvn exec:java
-```
+### Utils Layer
 
-2. Using the compiled JAR:
-```bash
-# Create executable JAR with dependencies
-mvn clean package assembly:single
+#### FileHandler
+Definitions:
+- FILE_PATH constant
+- Product list for operations
+Uses:
+- File reading loop
+- File writing operations
+Key DU Path: file content definition → parsing loop → product creation
 
-# Run the JAR
-java -jar target/inventory-management-system-1.0-SNAPSHOT-jar-with-dependencies.jar
-```
+## 2. Testing Strategy
 
-### Development Commands
+### Models Testing
+1. Product Unit Test
+   - Field definitions → getter uses
+   - Constructor params → field uses
+   - Setters → field updates
 
-#### Basic Maven Commands
-```bash
-# Clean the project
-mvn clean
+2. OrderItem Unit Test
+   - Product reference flow
+   - Quantity definitions
+   - Subtotal calculation uses
 
-# Compile the project
-mvn compile
+3. Order Unit Test
+   - Items list definition
+   - Loop in getTotalAmount
+   - Status transitions
 
-# Run tests
-mvn test
+4. User Unit Test
+   - Credentials definitions
+   - Role-based uses
 
-# Package the application
-mvn package
+### Services Testing
+1. InventoryManager Unit Test
+   - Map operations
+   - Product management
+   - Stock calculations
 
-# Install to local repository
-mvn install
+2. OrderManager Unit Test
+   - Order creation flow
+   - Processing loop coverage
+   - Stock updates
 
-# Clean and install (most common)
-mvn clean install
-```
+3. SearchService Unit Test
+   - Search parameter definitions
+   - Filter operations
+   - Stream processing
 
-#### Testing Commands
-```bash
-# Run all tests
-mvn test
+4. UserManager Unit Test
+   - User management
+   - Session handling
 
-# Run specific test class
-mvn test -Dtest=InventoryManagerTest
+### Integration Testing
+1. Base Flow Tests
+   - Product → OrderItem
+   - OrderItem → Order
+   
+2. Service Flow Tests
+   - InventoryManager → FileHandler
+   - OrderManager → InventoryManager
+   - SearchService → InventoryManager
+   - UserManager → OrderManager
 
-# Skip tests
-mvn install -DskipTests
-```
+# 3. Test Implementation
 
-#### Other Useful Commands
-```bash
-# Show dependency tree
-mvn dependency:tree
+## Unit Test Templates
 
-# Run the application
-mvn exec:java
-
-# Create executable JAR with dependencies
-mvn clean package assembly:single
-```
-## Default Access
-Default admin account:
-- Username: admin
-- Password: admin123
-
-## Configuration
-The application uses a file-based storage system:
-- Inventory data is stored in `src/main/resources/inventory.txt`
-- File format: CSV with fields: id,name,price,quantity,category
-
-## Testing
-The project uses JUnit 5 for testing. Tests can be run using:
-```bash
-mvn test
-```
-
-## Building for Production
-To create a production-ready JAR with all dependencies:
-```bash
-mvn clean package assembly:single
-```
-This will create an executable JAR in the `target` directory.
-## Project Structure
-```
-src/
-├── main/
-│   ├── java/
-│   │   └── com/
-│   │       └── inventory/
-│   │           ├── models/
-│   │           │   ├── Order.java
-│   │           │   ├── OrderItem.java
-│   │           │   ├── Product.java
-│   │           │   └── User.java
-│   │           ├── services/
-│   │           │   ├── InventoryManager.java
-│   │           │   ├── OrderManager.java
-│   │           │   ├── SearchService.java
-│   │           │   └── UserManager.java
-│   │           ├── utils/
-│   │           │   └── FileHandler.java
-│   │           └── App.java
-│   └── resources/
-│       └── inventory.txt
-└── test/
-    └── java/
-        └── com/
-            └── inventory/
-                └── InventoryManagerTest.java
-```
-
-## Features Implemented
-1. Inventory Management
-   - Product tracking with real-time quantity updates
-   - Stock level monitoring with threshold checking
-   - Category organization
-   - File-based persistence for inventory data
-
-2. Order Processing
-   - Order creation and management
-   - Real-time inventory updates on order processing
-   - Order status tracking (PENDING, COMPLETED)
-   - Multi-level quantity validation
-
-3. Search and Filter System
-   - Name-based product search
-   - Price range filtering
-   - Stock level filtering
-
-4. User Authentication
-   - Role-based access control (Admin/User)
-   - Basic login system
-   - User registration
-   - Operation authorization
-
-## Core Functionalities
-
-### 1. Inventory Management
-- **Product Management**
-  - Create, read, and update product information
-  - Track product quantities in real-time
-  - Products persist through file storage system
-  - Validation for product data integrity (price, quantity, ID format)
-
-- **Stock Control**
-  - Automatic quantity updates on orders
-  - Low stock threshold checking
-  - Stock validation during order processing
-
-### 2. Order System
-- **Order Processing**
-  - Create new orders with multiple items
-  - Real-time stock validation
-  - Three-layer quantity validation:
-    * Individual item quantity check
-    * Running total validation during order creation
-    * Final validation before inventory update
-  - Order status tracking (PENDING → COMPLETED)
-
-### 3. User and Security System
-- **Access Control**
-  - Two roles: Admin and User
-  - Basic authentication
-  - Role-based operation restrictions
-  - Default admin account (username: admin, password: admin123)
-
-## Technical Architecture
-
-### Class Structure
-
-#### Models
-1. **Product**
-   - Properties: id (alphanumeric), name, price (non-negative), quantity (non-negative), category
-   - Input validation for all fields
-   - String representation for display
-
-2. **Order**
-   - Contains list of OrderItems
-   - Tracks order status (PENDING/COMPLETED)
-   - Calculates total amount
-   - Status transition validation
-
-3. **OrderItem**
-   - Links products to orders
-   - Manages and validates item quantities
-   - Calculates subtotal
-
-4. **User**
-   - Stores username, password, and role
-   - Role-based access control
-   - Password verification
-
-#### Services
-1. **InventoryManager**
-   - Manages product CRUD operations
-   - Handles quantity updates
-   - Manages file persistence
-   - Provides stock level checks
-
-2. **OrderManager**
-   - Creates and processes orders
-   - Validates stock availability
-   - Updates inventory on order completion
-   - Maintains order history
-
-3. **SearchService**
-   - Name-based product search
-   - Price range filtering with validation
-   - Stock level filtering with validation
-
-4. **UserManager**
-   - User authentication
-   - User registration with uniqueness check
-   - Role-based access control
-   - Session management
-
-#### Utils
-1. **FileHandler**
-   - CSV-based inventory persistence
-   - Error handling with line number tracking
-   - Data format validation
-
-## System Flow Diagram
-```mermaid
-graph TD
-    A[User/Admin] --> B[Authentication]
-    B --> C[Access Control]
+### Definition-Use Coverage Template
+```java
+@Test
+void testDefinitionsAndUses() {
+    // 1. Setup definitions
+    Type variable = new Type();
     
-    C --> D[Inventory Management]
-    C --> E[Order Processing]
-    C --> F[Search Operations]
+    // 2. Exercise uses
+    Result result = variable.method();
     
-    D --> G[File Operations]
-    E --> D
-    
-    D --> H[Product Management]
-    H --> G
-    
-    subgraph "Inventory Operations"
-        H --> I[Stock Updates]
-        I --> D
-    end
-    
-    subgraph "Order Flow"
-        E --> J[Quantity Validation]
-        J --> K[Stock Update]
-        K --> I
-    end
-
-    classDef default fill:#fff,color:#000
-    classDef process fill:#ea9999,color:#000
-    classDef storage fill:#9fc5e8,color:#000
-    
-    class A,B,C default;
-    class D,E,F,H process;
-    class G,I,J,K storage;
+    // 3. Verify definition reached use
+    assertEquals(expected, result);
+}
 ```
 
-### Data Management
-- File-based persistence for inventory (inventory.txt)
-- In-memory data structures:
-  * Products: HashMap<String, Product>
-  * Orders: HashMap<String, Order>
-  * Users: HashMap<String, User>
+### Loop Coverage Template
+```java
+@Test
+void testLoopDefinitionUse() {
+    // 1. Setup collection definitions
+    List<Type> items = createItems();
+    
+    // 2. Exercise loop
+    Result result = processItems(items);
+    
+    // 3. Verify all definitions used
+    verifyProcessing(result);
+}
+```
 
-## Data Flow & Validation
+## Integration Test Templates
 
-### 1. Product Flow
-- Creation: Validates ID format, price, quantity, category
-- Updates: Validates new values, persists to file
-- Deletion: Not implemented to maintain data integrity
+### Cross-Component Flow Template
+```java
+@Test
+void testComponentInteraction() {
+    // 1. Setup first component definitions
+    FirstComponent first = new FirstComponent();
+    
+    // 2. Flow to second component
+    SecondComponent second = new SecondComponent(first);
+    
+    // 3. Verify definition flow
+    assertEquals(expected, second.getResult());
+}
+```
 
-### 2. Order Flow
-- Creation: Validates order ID uniqueness
-- Item Addition: 
-  * Checks product existence
-  * Validates quantity against stock
-  * Tracks running total per product
-- Processing:
-  * Validates total quantities
-  * Updates inventory
-  * Changes status to COMPLETED
+## 4. Coverage Evidence
+### Screenshots
+```bash
+mvn clean test
+```
+![screenshot1](images/screenshot1.png)
+![screenshot2](images/screenshot2.png)
 
-### 3. User Flow
-- Registration: Validates username uniqueness
-- Login: Verifies credentials
-- Authorization: Checks role before operations
 
-### 4. File Operations
-- Load: Validates data format and values
-- Save: Ensures data consistency
-- Error Handling: Reports specific file and data issues
-
-## Usage
-The system provides a command-line interface with separate menus for admin and regular users:
-
-### Admin Menu
-1. View Products
-2. Search Products
-3. Create Order
-4. View Orders
-5. Add Product
-6. Update Product Quantity
-7. View Low Stock Products
-8. View Total Inventory Value
-9. Save Inventory to File
-10. Logout
-
-### User Menu
-1. View Products
-2. Search Products
-3. Create Order
-4. View Orders
-5. Logout
