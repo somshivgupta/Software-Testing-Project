@@ -3,6 +3,7 @@
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/integration/OrderManagerInventoryManagerTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/integration/ProductOrderItemTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/integration/SearchServiceInventoryManagerTest.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/integration/UserManagerOrderManagerTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/models/OrderItemTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/models/OrderTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/models/ProductTest.java
@@ -10,4 +11,5 @@
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/services/InventoryManagerTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/services/OrderManagerTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/services/SearchServiceTest.java
+/home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/services/UserManagerTest.java
 /home/tathagat/workspace/projects/ST/major-project/major-project/src/test/java/com/inventory/unit/utils/FileHandlerTest.java

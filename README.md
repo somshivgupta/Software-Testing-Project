@@ -6,6 +6,9 @@ A simple inventory management system built with Java.
 ## Project Overview
 A Java-based inventory management system designed to handle product inventory and orders. The system provides functionality for tracking stock levels, processing orders, and maintaining inventory data with file persistence.
 
+## Project github link:
+
+
 ## Installation & Setup
 
 ### Prerequisites

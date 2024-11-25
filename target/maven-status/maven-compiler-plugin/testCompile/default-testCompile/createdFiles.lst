@@ -3,6 +3,8 @@ com/inventory/integration/ProductOrderItemTest.class
 com/inventory/unit/models/OrderTest.class
 com/inventory/unit/models/UserTest.class
 com/inventory/unit/utils/FileHandlerTest.class
+com/inventory/integration/UserManagerOrderManagerTest.class
+com/inventory/unit/services/UserManagerTest.class
 com/inventory/unit/services/InventoryManagerTest.class
 com/inventory/unit/models/ProductTest.class
 com/inventory/unit/models/OrderItemTest.class
