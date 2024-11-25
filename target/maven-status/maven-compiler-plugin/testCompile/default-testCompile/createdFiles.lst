@@ -1,9 +1,13 @@
-com/inventory/unit/models/OrderItemTest.class
+com/inventory/unit/services/SearchServiceTest.class
 com/inventory/integration/ProductOrderItemTest.class
-com/inventory/integration/OrderItemOrderTest.class
-com/inventory/unit/services/OrderManagerTest.class
 com/inventory/unit/models/OrderTest.class
+com/inventory/unit/models/UserTest.class
 com/inventory/unit/utils/FileHandlerTest.class
-com/inventory/integration/InventoryManagerFileHandlerTest.class
 com/inventory/unit/services/InventoryManagerTest.class
 com/inventory/unit/models/ProductTest.class
+com/inventory/unit/models/OrderItemTest.class
+com/inventory/integration/SearchServiceInventoryManagerTest.class
+com/inventory/integration/OrderItemOrderTest.class
+com/inventory/unit/services/OrderManagerTest.class
+com/inventory/integration/OrderManagerInventoryManagerTest.class
+com/inventory/integration/InventoryManagerFileHandlerTest.class
