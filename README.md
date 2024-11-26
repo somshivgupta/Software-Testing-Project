@@ -8,8 +8,8 @@
 [Github](https://github.com/tathagat11/Software-Testing-Project)
 
 ## Individual Contribution
-1. Tathagata Talukdar (MT2023189):
-2. Som Shiv Gupta ():
+1. Tathagata Talukdar (MT2023189): Base Code Creation + Identifying and Designing Integration (data flow between classes) tests + Deciding a process to identify DU pairs
+2. Som Shiv Gupta (MT2023015): Identifying and Designing unit tests for model, service and utils + Deciding a process to identify DU pairs
 
 ## 1. Component Analysis
 This section identifies all definitions and their uses for data flow testing requirements.
